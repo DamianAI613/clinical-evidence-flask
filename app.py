@@ -101,18 +101,6 @@ def pubmed_search():
         "endpoint": url
     }
 
-@app.post("/api/pubmed/fetch")
-def pubmed_fetch():
-    body = request.get_json(force=True)
-    pmids = body.get("pmids") or []
-    if not pmids: return ("Missing pmids", 400)
-    params = eutils_params(db="pubmed", retmode="json", id=",".join(pmids))
-    url = f"{BASE_EUTILS}/esummary.fcgi?{urlencode(params)}"
-    r = requests.get(url, timeout=30); r.raise_for_status()
-    j = r.json()
-    result = [v for k, v in j.get("result", {}).items() if k != "uids"]
-    return {"items": result, "endpoint": url}
-
 @app.post("/api/ctgov/search")
 def ctgov_search():
     body = request.get_json(force=True)
