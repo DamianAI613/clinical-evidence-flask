@@ -13,12 +13,17 @@
       button { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; }
       .msg { white-space: pre-wrap; margin: 12px 0; }
     </style>
+.chat-area { max-height: 70vh; overflow-y: auto; }
+.msg.user { color: #1e3a8a; }
+.msg.assistant { color: #334155; }
+
   </head>
   <body>
+    <body style="padding: 24px;">
     <h1>Clinical Evidence Navigator</h1>
     <p style="color:#555">Ask for evidence. For education only—no medical advice.</p>
 
-    <div id="chat" class="box">
+    <div id="chat" class="box chat-area"></div>
       <p id="empty">Type a question below to begin.</p>
     </div>
 
@@ -49,8 +54,9 @@
       function add(role, content) {
         document.getElementById("empty")?.remove();
         const div = document.createElement("div");
-        div.className = "msg";
+        div.className = "msg " + (role === "user" ? "user" : "assistant");
         div.innerHTML = `<strong>${role === "user" ? "You" : "Navigator"}:</strong> ${content}`;
+
         chat.appendChild(div);
         window.scrollTo(0, document.body.scrollHeight);
       }
