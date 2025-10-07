@@ -22,6 +22,19 @@
       <p id="empty">Type a question below to begin.</p>
     </div>
 
+<div style="margin: 12px 0; font-size: 14px;">
+  <strong>Try one:</strong>
+  <button onclick="preset('Summarize RCTs of semaglutide in NASH')">Semaglutide</button>
+  <button onclick="preset('Build a PubMed query for SGLT2 in heart failure')">SGLT2 in HF</button>
+  <button onclick="preset('List phase 3 trials of tirzepatide in obesity')">Tirzepatide</button>
+</div>
+<script>
+  function preset(text){
+    document.getElementById('input').value = text;
+  }
+</script>
+
+    
     <div class="row">
       <input id="input" placeholder="e.g., Summarize RCTs of semaglutide in NASH" />
       <button id="send">Send</button>
