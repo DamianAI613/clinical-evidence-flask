@@ -72,6 +72,56 @@ def chat():
     except Exception as e:
         print("Error:", e)
         return f"Error: {e}", 500
+import requests
+from urllib.parse import urlencode
+
+BASE_EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
+NCBI_KEY = os.getenv("NCBI_API_KEY")
+CTG_V2 = "https://clinicaltrials.gov/api/v2/studies"
+
+def eutils_params(**kw):
+    params = {k: v for k, v in kw.items() if v is not None}
+    if NCBI_KEY:
+        params["api_key"] = NCBI_KEY
+    return params
+
+@app.post("/api/pubmed/search")
+def pubmed_search():
+    body = request.get_json(force=True)
+    term = body.get("term", "")
+    retmax = body.get("retmax", 20)
+    sort = body.get("sort", "pub+date")
+    params = eutils_params(db="pubmed", term=term, retmode="json", retmax=retmax, sort=sort)
+    url = f"{BASE_EUTILS}/esearch.fcgi?{urlencode(params)}"
+    r = requests.get(url, timeout=30); r.raise_for_status()
+    j = r.json()
+    return {
+        "pmids": j.get("esearchresult", {}).get("idlist", []),
+        "count": j.get("esearchresult", {}).get("count"),
+        "endpoint": url
+    }
+
+@app.post("/api/pubmed/fetch")
+def pubmed_fetch():
+    body = request.get_json(force=True)
+    pmids = body.get("pmids") or []
+    if not pmids: return ("Missing pmids", 400)
+    params = eutils_params(db="pubmed", retmode="json", id=",".join(pmids))
+    url = f"{BASE_EUTILS}/esummary.fcgi?{urlencode(params)}"
+    r = requests.get(url, timeout=30); r.raise_for_status()
+    j = r.json()
+    result = [v for k, v in j.get("result", {}).items() if k != "uids"]
+    return {"items": result, "endpoint": url}
+
+@app.post("/api/ctgov/search")
+def ctgov_search():
+    body = request.get_json(force=True)
+    query = body.get("query")
+    page_size = body.get("pageSize", 20)
+    params = {"query": query, "pageSize": page_size}
+    url = f"{CTG_V2}?{urlencode(params)}"
+    r = requests.get(url, timeout=30); r.raise_for_status()
+    return r.json()
 
 if __name__ == "__main__":
     app.run(debug=True)
