@@ -123,5 +123,71 @@ def ctgov_search():
     r = requests.get(url, timeout=30); r.raise_for_status()
     return r.json()
 
+# ----- Evidence fetch helpers (PubMed + CT.gov) -----
+import requests
+from urllib.parse import urlencode
+
+BASE_EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
+NCBI_KEY = os.getenv("NCBI_API_KEY")
+CTG_V2 = "https://clinicaltrials.gov/api/v2/studies"
+
+def eutils_params(**kw):
+    params = {k: v for k, v in kw.items() if v is not None}
+    if NCBI_KEY:
+        params["api_key"] = NCBI_KEY
+    return params
+
+@app.post("/api/pubmed/fetch")
+def pubmed_fetch():
+    body = request.get_json(force=True)
+    pmids = body.get("pmids") or []
+    if not pmids: return ("Missing pmids", 400)
+    params = eutils_params(db="pubmed", retmode="json", id=",".join(pmids))
+    url = f"{BASE_EUTILS}/esummary.fcgi?{urlencode(params)}"
+    r = requests.get(url, timeout=30); r.raise_for_status()
+    j = r.json()
+    items = [v for k, v in j.get("result", {}).items() if k != "uids"]
+    # Minimal fields we’ll render in the table
+    out = []
+    for it in items:
+        out.append({
+            "pmid": str(it.get("uid","")),
+            "title": it.get("title",""),
+            "source": it.get("fulljournalname") or it.get("source",""),
+            "year": it.get("pubdate","")[:4],
+            "link": f"https://pubmed.ncbi.nlm.nih.gov/{it.get('uid','')}/"
+        })
+    return {"items": out}
+
+@app.post("/api/ctgov/fetch")
+def ctgov_fetch():
+    body = request.get_json(force=True)
+    nct_ids = body.get("nctIds") or []
+    if not nct_ids: return ("Missing nctIds", 400)
+    q = " OR ".join(f"NCTId:{i}" for i in nct_ids)
+    params = {"query": q, "pageSize": len(nct_ids), "fields": "NCTId,BriefTitle,OverallStatus,Phase"}
+    url = f"{CTG_V2}?{urlencode(params)}"
+    r = requests.get(url, timeout=30); r.raise_for_status()
+    data = r.json().get("studies", [])
+    items = []
+    for s in data:
+        rec = {f["field"]: f["value"] for f in s.get("protocolSection", {}).get("identificationModule", {}).get("orgStudyIdInfo", [])}
+        nct = s.get("protocolSection", {}).get("identificationModule", {}).get("nctId") or s.get("studies", [{}])[0].get("NCTId")
+        items.append({
+            "nct": s.get("protocolSection", {}).get("identificationModule", {}).get("nctId") or s.get("NCTId"),
+            "title": s.get("protocolSection", {}).get("identificationModule", {}).get("briefTitle") or s.get("BriefTitle"),
+            "status": s.get("protocolSection", {}).get("statusModule", {}).get("overallStatus") or s.get("OverallStatus"),
+            "phase": (s.get("protocolSection", {}).get("designModule", {}) or {}).get("phases") or s.get("Phase"),
+        })
+    # Fallback simple parser if v2 shape varies
+    if not items and "studies" in (r.json() or {}):
+        items = [{"nct": x.get("NCTId"), "title": x.get("BriefTitle"), "status": x.get("OverallStatus"), "phase": x.get("Phase")} for x in r.json()["studies"]]
+    # Add links
+    for it in items:
+        if it.get("nct"):
+            it["link"] = f"https://clinicaltrials.gov/study/{it['nct']}"
+    return {"items": items}
+
+
 if __name__ == "__main__":
     app.run(debug=True)
