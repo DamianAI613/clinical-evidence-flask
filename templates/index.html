@@ -12,30 +12,105 @@
       input { flex: 1; border: 1px solid #cbd5e1; border-radius: 6px; }
       button { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; }
       .msg { white-space: pre-wrap; margin: 12px 0; }
-    </style>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    margin: 24px;
+    background-color: #ffffff;
+  }
 
-.top-bar {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 100;
-}
+  /* --- Top-right logo --- */
+  .top-bar {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 100;
+  }
 
-.logo {
-  height: 60px;
-  width: auto;
-  border-radius: 6px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.15);
-}
+  .logo {
+    height: 60px;
+    width: auto;
+    border-radius: 6px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+  }
 
+  /* --- Chat container --- */
+  .chat-area {
+    max-height: 70vh;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 80px; /* adds space below logo */
+  }
 
-.chat-area { max-height: 70vh; overflow-y: auto; }
-.msg.user { color: #1e3a8a; }
-.msg.assistant { color: #334155; }
-.table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 14px; }
-.table th, .table td { border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; }
-.table th { background: #f8fafc; }
-.evidence { background: #f9fafb; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; margin: 8px 0; }
+  .msg {
+    white-space: pre-wrap;
+    margin: 12px 0;
+    line-height: 1.4;
+  }
+
+  .msg.user {
+    color: #1e3a8a;
+  }
+
+  .msg.assistant {
+    color: #334155;
+  }
+
+  /* --- Evidence Tables --- */
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 14px;
+  }
+
+  .table th,
+  .table td {
+    border: 1px solid #e2e8f0;
+    padding: 6px 8px;
+    text-align: left;
+  }
+
+  .table th {
+    background: #f8fafc;
+  }
+
+  .evidence {
+    background: #f9fafb;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px;
+    margin: 8px 0;
+  }
+
+  /* --- Inputs and buttons --- */
+  .row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  input {
+    flex: 1;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 10px;
+  }
+
+  button {
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    border-radius: 6px;
+    padding: 10px 16px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #e2e8f0;
+  }
+</style>
 
 
     
