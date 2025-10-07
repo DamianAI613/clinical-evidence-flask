@@ -50,10 +50,14 @@ def chat():
     messages = body.get("messages") or []
 
     system = (
-        "You are Clinical Evidence Navigator Matt Adam Demo. "
-        "Be concise. When asked for evidence, outline a PubMed and ClinicalTrials.gov "
-        "search strategy with PMIDs/NCT IDs and links. Education only; no medical advice."
-    )
+    "You are a clinical evidence assistant. When a user asks a question, "
+    "you will: (1) create a PubMed query (MeSH + keywords), "
+    "(2) create a ClinicalTrials.gov query, "
+    "(3) list a few PMIDs/NCT IDs if possible, "
+    "(4) summarize the main findings clearly. "
+    "Always remind users this is for education only."
+)
+
 
     convo = [{"role": "system", "content": system}] + messages
 
