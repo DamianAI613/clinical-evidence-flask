@@ -7,6 +7,8 @@ from time import time
 load_dotenv()
 
 app = Flask(__name__)
+os.environ.pop("HTTP_PROXY", None)
+os.environ.pop("HTTPS_PROXY", None)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 _BUCKET = {"tokens": 60, "ts": time()}
